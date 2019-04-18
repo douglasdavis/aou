@@ -1,0 +1,124 @@
+\documentclass{article}
+\setlength{\oddsidemargin}{0.25 in}
+\setlength{\evensidemargin}{-0.25 in}
+\setlength{\topmargin}{-0.6 in}
+\setlength{\textwidth}{6.5 in}
+\setlength{\textheight}{8.5 in}
+\setlength{\headsep}{0.75 in}
+\setlength{\parindent}{0 in}
+\setlength{\parskip}{0.1 in}
+\usepackage{amsmath,amsfonts,graphicx}
+\usepackage{tikz}
+\usepackage{gnuplot-lua-tikz}
+\usepackage{epsfig}
+\usepackage{filecontents}
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{mathtools}
+\usepackage{breqn}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{bm}
+\usepgfplotslibrary{statistics}
+
+\newcounter{lecnum}
+\renewcommand{\thepage}{\thelecnum-\arabic{page}}
+\renewcommand{\thesection}{\thelecnum.\arabic{section}}
+\renewcommand{\theequation}{\thelecnum.\arabic{equation}}
+\renewcommand{\thefigure}{\thelecnum.\arabic{figure}}
+\renewcommand{\thetable}{\thelecnum.\arabic{table}}
+
+\newcommand{\cov}[2]{
+  \mathrm{cov}(#1,#2)
+}
+
+\renewcommand{\vec}[1]{\boldsymbol{\mathbf{#1}}}
+
+\newcommand{\lecture}[4]{
+  \pagestyle{myheadings}
+  \thispagestyle{plain}
+  \setcounter{lecnum}{#1}
+  \setcounter{page}{1}
+  \noindent
+  \begin{center}
+    \framebox{
+      \vbox{\vspace{2mm}
+        \hbox to 6.28in { {\bf Analysis of Uncertainties
+	    \hfill Fall 2014} }
+        \vspace{4mm}
+        \hbox to 6.28in { {\Large \hfill Lecture #1: #2  \hfill} }
+        \vspace{2mm}
+        \hbox to 6.28in { {\it Lecturer: #3 \hfill Notes by: #4} }
+        \vspace{2mm}}
+    }
+  \end{center}
+  \markboth{Lecture #1: #2}{Lecture #1: #2}
+  \vspace*{4mm}
+}
+
+\renewcommand{\cite}[1]{[#1]}
+\def\beginrefs{\begin{list}%
+    {[\arabic{equation}]}{\usecounter{equation}
+      \setlength{\leftmargin}{2.0truecm}\setlength{\labelsep}{0.4truecm}%
+      \setlength{\labelwidth}{1.6truecm}}}
+\def\endrefs{\end{list}}
+\def\bibentry#1{\item[\hbox{[#1]}]}
+
+\newtheorem{theorem}{Theorem}[lecnum]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newenvironment{proof}{{\bf Proof:}}{\hfill\rule{2mm}{2mm}}
+\newcommand\E{\mathbb{E}}
+
+\begin{document}
+\lecture{5}{12 November 2014}{Prof. Kate Scholberg}{Douglas Davis}
+\section{Synopsis of error matrix equations}
+Recall from the previous lecture the error matrix (for correlated variables $x_1,\dotsc,x_n$):
+\begin{align}
+  \vec{M} = \begin{pmatrix}
+    \sigma_{x_1}^2 & \cov{x_1}{x_2} & \ldots & \cov{x_1}{x_n} \\
+    \cov{x_1}{x_2} & \sigma_{x_2}^2 & \ldots & \cov{x_2}{x_n} \\
+    \vdots         & \vdots         & \ddots & \vdots         \\
+    \cov{x_1}{x_n} & \cov{x_2}{x_n} & \ldots & \sigma_{x_n}^2
+  \end{pmatrix}
+\end{align}
+And this came from:
+\begin{align}
+  P(x_1,x_2,\dotsc,x_n) = \frac{1}{(2\pi)^{n/2}}\frac{1}{|\vec{M}|^{1/2}}\exp\left[-\frac{1}{2}\left(\vec{x}-\boldsymbol{\mu}\right)^{\mathrm{T}}\vec{M}^{-1}\left(\vec{x}-\boldsymbol{\mu}\right)\right]
+\end{align}
+We can use the error matrix for three scenarios:
+\begin{enumerate}
+\item Error propagation of a variable as a function of independent variables $x_1,\dotsc,x_n$.
+  \begin{align}
+    r = f(x_1,\dotsc,x_n) \quad\rightarrow\quad \sigma_r^2 = \vec{D}^{\mathrm{T}}\vec{M}\vec{D} \quad \text{where}\quad \vec{D} =
+    \begin{pmatrix}
+      \partial r / \partial x_1 \\
+      \vdots \\
+      \partial r / \partial x_n
+    \end{pmatrix}
+    \label{eq:pt1}
+  \end{align}
+\item Changing variables. If $\{y_m\}$ are all functions of $\{x_n\}$.
+  \begin{align}
+    \vec{A} = \begin{pmatrix}
+      \partial y_1/\partial x_1 & \ldots & \partial y_m/\partial x_1 \\
+      \vdots                    & \ddots & \vdots                    \\
+      \partial y_1/\partial x_n & \ldots & \partial y_m/\partial x_n
+    \end{pmatrix} \quad\rightarrow\quad
+    \vec{M}_{\{y_m\}} = \vec{A}^{\mathrm{T}}\vec{M}_{\{x_n\}}\vec{A}
+    \label{eq:pt2}
+  \end{align}
+\item And uncertainties in values dependent on changed variables. If $z$ is a function of all $\{y_m\}$:
+  \begin{align}
+    z=f(y_1,\dotsc,y_m) \quad\rightarrow\quad \sigma_z^2 = \vec{D}^{\prime\mathrm{T}} \vec{A}^{\mathrm{T}}\vec{M}_{\{x_n\}}\vec{A}\vec{D}^{\prime} = \vec{D}^{\prime\mathrm{T}}\vec{M}_{\{y_m\}}\vec{D}^{\prime} \quad\text{where}\quad \vec{D}^{\prime} = \begin{pmatrix}
+      \partial z/\partial y_1 \\
+      \vdots                  \\
+      \partial z/\partial y_m
+    \end{pmatrix}
+    \label{eq:pt3}
+  \end{align}
+\end{enumerate}
+\section{Error matrices example uses}
+\end{document}

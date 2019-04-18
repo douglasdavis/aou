@@ -1,0 +1,213 @@
+\documentclass{article}
+\setlength{\oddsidemargin}{0.25 in}
+\setlength{\evensidemargin}{-0.25 in}
+\setlength{\topmargin}{-0.6 in}
+\setlength{\textwidth}{6.5 in}
+\setlength{\textheight}{8.5 in}
+\setlength{\headsep}{0.75 in}
+\setlength{\parindent}{0 in}
+\setlength{\parskip}{0.1 in}
+
+\usepackage{amsmath,amsfonts,graphicx}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{filecontents}
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{mathtools}
+\usepackage{breqn}
+\usepgfplotslibrary{statistics}
+
+\newcounter{lecnum}
+\renewcommand{\thepage}{\thelecnum-\arabic{page}}
+\renewcommand{\thesection}{\thelecnum.\arabic{section}}
+\renewcommand{\theequation}{\thelecnum.\arabic{equation}}
+\renewcommand{\thefigure}{\thelecnum.\arabic{figure}}
+\renewcommand{\thetable}{\thelecnum.\arabic{table}}
+
+\newcommand{\lecture}[4]{
+  \pagestyle{myheadings}
+  \thispagestyle{plain}
+  \setcounter{lecnum}{#1}
+  \setcounter{page}{1}
+  \noindent
+  \begin{center}
+    \framebox{
+      \vbox{\vspace{2mm}
+        \hbox to 6.28in { {\bf Analysis of Uncertainties
+	    \hfill Fall 2014} }
+        \vspace{4mm}
+        \hbox to 6.28in { {\Large \hfill Lecture #1: #2  \hfill} }
+        \vspace{2mm}
+        \hbox to 6.28in { {\it Lecturer: #3 \hfill Notes by: #4} }
+        \vspace{2mm}}
+    }
+  \end{center}
+  \markboth{Lecture #1: #2}{Lecture #1: #2}
+  \vspace*{4mm}
+}
+
+\renewcommand{\cite}[1]{[#1]}
+\def\beginrefs{\begin{list}%
+    {[\arabic{equation}]}{\usecounter{equation}
+      \setlength{\leftmargin}{2.0truecm}\setlength{\labelsep}{0.4truecm}%
+      \setlength{\labelwidth}{1.6truecm}}}
+\def\endrefs{\end{list}}
+\def\bibentry#1{\item[\hbox{[#1]}]}
+
+\newtheorem{theorem}{Theorem}[lecnum]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newenvironment{proof}{{\bf Proof:}}{\hfill\rule{2mm}{2mm}}
+
+\newcommand\E{\mathbb{E}}
+
+\begin{document}
+\lecture{2}{24 October 2014}{Prof. Kate Scholberg}{Douglas Davis}
+\section{Probability}
+We define probability with
+\begin{align}
+  P = \frac{\text{number of occasions some particular result occurs}}{\text{total number of occurrences}}
+\end{align}
+The probability can only be between 0 and 1 (normalized). We write a discrete normalized distribution as:
+\begin{align}
+  \sum_i P_i = 1
+\end{align}
+An example would be a the probability of rolling a dice and getting a certain number. If the dice is fair, we have 6 total outcomes with each having a probability of 1/6
+\begin{align*}
+  \sum_{i=1}^6 P_i = 6\times\frac{1}{6} = 1
+\end{align*}
+An example of continuous probabilities would be the isotropic emission of say a photon (let's take this to be 2-dimensional for simplicity). The probability that the photon comes off at a set angle $\theta$ is just
+\begin{align*}
+  P(\theta) = \frac{1}{2\pi},
+\end{align*}
+it's just constant for any angle. The probability that the photon is emitted in some range of angles, $\Delta\theta$, would be $\Delta\theta/2\pi$. Integrating over all of $2\pi$ angles, we show:
+\begin{align*}
+  \int_0^{2\pi}P(\theta)d\theta = \frac{1}{2\pi}\int_0^{2\pi} d\theta = 2\pi/2\pi = 1.
+\end{align*}
+The familiar normalization condition for wave functions in quantum mechanics is just a property of probability. The probability that the state represented by the wave function $\psi$ exists from $-\infty$ to $\infty$ is 1.
+
+\noindent Let's develop some definitions and notation. If $A$ and $B$ are possible outcomes, then:
+\begin{align}
+  P(A+B) \equiv \text{probability of }A\text{ or }B,
+\end{align}
+When $A$ and $B$ are independent (exclusive) the $P(A+B)$ is just equal to the sum of $P(A)$ and $P(B)$, but in general:
+\begin{align*}
+  P(A+B) \leq P(A) + P(B).
+\end{align*}
+Another definition:
+\begin{align}
+  P(AB) \equiv \text{probability of }A\text{ and } B = P(A|B)P(B).
+  \label{eq:condi}
+\end{align}
+The new form we've introduced is the \emph{conditional probability}, $P(A|B)$, which is the probability of $A$ given $B$. Let's jump into a couple examples using the conditional probability. Let's say that $A$ represents that it's a Friday in October, and $B$ represents we have a 771 class day during this day in October. There are 4 class days for 771 in October, and there are 5 Fridays in the current October (2 are on Friday, 2 are not). First let's determine if the $A$ and $B$ are independent (if they are, $P(A)P(B)=P(AB)$).
+\begin{align*}
+  P(A)P(B) & = \frac{5}{31}\times\frac{4}{31} \approx .02 \\
+  P(AB)    & = P(B|A)P(A) = \frac{2}{4}\times\frac{4}{31} = \frac{2}{31} \approx .065.
+\end{align*}
+Therefore, $A$ and $B$ are definitely not independent (as expected). We can also calculate $P(AB)$ using a different ordering of equation~\ref{eq:condi}:
+\begin{align*}
+  P(AB) = P(B|A)P(A) = \frac{2}{5}\times\frac{5}{31} = \frac{2}{31},
+\end{align*}
+as expected.
+
+\noindent We've now reached a point where we can introduce Bayes' Theorem:
+\begin{align}
+  P(A|B)P(B) & = P(B|A)P(A)                                                               \\
+  P(A|B)     & = \frac{P(B|A)P(A)}{P(B)}
+\end{align}
+Taking an example that works perfectly for current events, let $A$ be the probability that you have ebola and let $B$ be the probability that you test positive. Let's say a test has a 99\% detection rate and a 1\% false detection rate.
+\begin{align*}
+  P(B|A)     & = \text{testing positive if you have ebola }\, (99\%)                      \\
+  P(A|B)     & = \text{probability of having ebola if you test positive }\, \text{(unknown)}
+\end{align*}
+We now need a value for $P(A)$, let's call the probability of having ebola 0.001. $P(B)$ is our false positive rate of 1\%. Now we can calculate:
+\begin{align*}
+  P(A|B) = \frac{P(B|A)P(A)}{P(B)} = \frac{0.99 \times 0.001}{0.01} \approx 10\%.
+\end{align*}
+With this we something a little counter intuitive -- if you test positive for ebola, there's really only a 10\% chance you have it under these circumstances. Let's look at a better physics example, proton decay. Let $A$ be the probability of proton decay, $B$ is the probability of any event passing selection cuts.
+\begin{align*}
+  P(B|A)     & = \text{effeciency (probability the event passes cuts given proton decay)} \\
+  P(A|B)     & = \text{probability of proton decay given an event passing selection cuts}
+\end{align*}
+Using Bayes':
+\begin{align}
+  P(A|B) = \frac{P(B|A)P(A)}{P(B)},
+\end{align}
+where $P(B)$ is the probability of a background event -- therefore the experiment needs high efficiency and low background to make a serious measurement (increase the value of $P(A|B)$).
+
+\noindent Let's now consider a parameter estimation scenario. Take $\frac{1}{2}(1+\alpha\cos\theta)$. Let $A$ be the experimental result probability and $B$ be the model parameterized by $\alpha$. $P(B|A) = P(A|B)P(B)/P(A)$ is the probability of $\alpha$ given the data. In this case $P(B)$ is very important, (this term is called the prior). If the experimenter does not know $P(B)$ well (if one does not have a reasonable distribution for it) then one cannot make much sense of $P(B|A)$ with much confidence. This is where Bayes' theorem has a weakness.
+
+\section{Probability Distributions}
+\subsection{Binomial}
+Let's imagine we have three dice -- how often will we get 3 ones? This is pretty simple:
+\begin{align*}
+  (1/6)^3 \approx 0.0046,
+\end{align*}
+about half a percent. How about 2 ones? Now we have 3 different scenarios where this will happen, The first a second dice will be 1, the first and third dice will be 1, and the second and third dice will be 1. Therefore wehave:
+\begin{align*}
+  3\times(1/6)^2(5/6) \approx 6.9\%
+\end{align*}
+In this case -- a ``success'' is getting a 1. Now we define a probability distribution using the following parameters:
+\begin{align}
+  P(x;n,p)
+\end{align}
+where $x$ is the number of successes, $n$ is the number of trials, and $p$ is the probability of success in one trial. In the above case, our distribution would be $P(x;3,1/6)$, and it would be a {\bf Binomial Distribution}. The probability distribution function for a binomial distribution is:
+\begin{align}
+  P(x;n,p) = {n \choose x}p^xq^{n-x},
+\end{align}
+where
+\begin{align*}
+  {n \choose x} \equiv n\text{ ``choose'' }x = \frac{n!}{x!(n-x)!} \text{ and } q\equiv 1-p
+\end{align*}
+Now we define the mean and the variance of the binomial distribution:
+\begin{align}
+  \langle x \rangle              & = \mu = \sum_{x=0}^n xP(x;n,p) = np                     \\
+  \sigma^2                       & = np(1-p)
+\end{align}
+\subsection{Poisson}
+The limit of the binomial distribution for low rate processes ($\mu \ll n, p \ll 1$) yields the {\bf Poisson distribution}:
+\begin{align}
+  P(x;\mu) = \frac{\mu^x}{x!}e^{-\mu}.
+\end{align}
+Poisson is unique in that the expected value and variance are the same:
+\begin{align}
+  \langle x \rangle              & = \mu                                                   \\
+  \sigma^2                       & = \mu
+\end{align}
+Poisson is continuous in $\mu$ and discrete in $x$.
+\subsection{Gaussian}
+Now we take $np \gg 1$ and arrive at the {\bf Gaussian distribution}:
+\begin{align}
+  P(x;\mu,\sigma) = \frac{1}{\sigma\sqrt{2\pi}}\exp\left[-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^2\right].
+\end{align}
+The Gaussian is defined for all $x$ and is continuous. Some properties of the distribution:
+\begin{align*}
+  1                              & = \int_{-\infty}^{\infty}dx\,P(x;\mu,\sigma)            \\
+  \langle x \rangle              & = \int_{-\infty}^{\infty}dx\,x\,P(x;\mu,\sigma)         \\
+  \langle (x-\mu)^2\rangle       & = \int_{-\infty}^{\infty}dx\,(x-\mu)^2\,P(x;\mu,\sigma) \\
+  P(\mu\pm\sigma;\mu,\sigma)     & = \frac{1}{e}P(\mu;\mu,\sigma)
+\end{align*}
+The ``full width at half max'', $\Gamma$, is $2.354\sigma$. And finally:
+\begin{align*}
+  1\sigma \text{ out from mean } &\approx \text{68\% of area}                              \\
+  2\sigma                        &\approx \text{95\% of area}                              \\
+  3\sigma                        &\approx \text{99\% of area}
+\end{align*}
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Here is a citation, just for fun~\cite{CW87}.
+
+\section*{References}
+\beginrefs
+\bibentry{CW87}{\sc D.~Coppersmith} and {\sc S.~Winograd}, 
+``Matrix multiplication via arithmetic progressions,''
+         {\it Proceedings of the 19th ACM Symposium on Theory of Computing},
+         1987, pp.~1--6.
+         \endrefs
+         

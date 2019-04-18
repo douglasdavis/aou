@@ -1,0 +1,298 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\setlength{\oddsidemargin}{0.25 in}
+\setlength{\evensidemargin}{-0.25 in}
+\setlength{\topmargin}{-0.6 in}
+\setlength{\textwidth}{6.5 in}
+\setlength{\textheight}{8.5 in}
+\setlength{\headsep}{0.75 in}
+\setlength{\parindent}{0 in}
+\setlength{\parskip}{0.1 in}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usepackage{gnuplot-lua-tikz}
+\usepackage{epsfig}
+\usepackage{filecontents}
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{mathtools}
+\usepackage{breqn}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{bm}
+\usepgfplotslibrary{statistics}
+
+\newcounter{lecnum}
+\renewcommand{\thepage}{\thelecnum-\arabic{page}}
+\renewcommand{\thesection}{\thelecnum.\arabic{section}}
+\renewcommand{\theequation}{\thelecnum.\arabic{equation}}
+\renewcommand{\thefigure}{\thelecnum.\arabic{figure}}
+\renewcommand{\thetable}{\thelecnum.\arabic{table}}
+
+\newcommand{\cov}[2]{
+  \mathrm{cov}(#1,#2)
+}
+
+\newcommand{\vecb}[1]{\boldsymbol{\mathbf{#1}}}
+
+\newcommand{\lecture}[4]{
+  \pagestyle{myheadings}
+  \thispagestyle{plain}
+  \setcounter{lecnum}{#1}
+  \setcounter{page}{1}
+  \noindent
+  \begin{center}
+    \framebox{
+      \vbox{\vspace{2mm}
+        \hbox to 6.28in { {\bf Analysis of Uncertainties
+	    \hfill Fall 2014} }
+        \vspace{4mm}
+        \hbox to 6.28in { {\Large \hfill Lecture #1: #2  \hfill} }
+        \vspace{2mm}
+        \hbox to 6.28in { {\it Lecturer: #3 \hfill Notes by: #4} }
+        \vspace{2mm}}
+    }
+  \end{center}
+  \markboth{Lecture #1: #2}{Lecture #1: #2}
+  \vspace*{4mm}
+}
+
+\renewcommand{\cite}[1]{[#1]}
+\def\beginrefs{\begin{list}%
+    {[\arabic{equation}]}{\usecounter{equation}
+      \setlength{\leftmargin}{2.0truecm}\setlength{\labelsep}{0.4truecm}%
+      \setlength{\labelwidth}{1.6truecm}}}
+\def\endrefs{\end{list}}
+\def\bibentry#1{\item[\hbox{[#1]}]}
+
+
+\newtheorem{theorem}{Theorem}[lecnum]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newenvironment{proof}{{\bf Proof:}}{\hfill\rule{2mm}{2mm}}
+\newcommand\E{\mathbb{E}}
+
+\begin{document}
+\lecture{4}{31 October 2014}{Prof. Kate Scholberg}{Douglas Davis}
+\section{Error matrices continued}
+Last lecture we introduced error matrices. Let's briefly remind ourselves of error propagation for some measurement $x$ which is a function of many variables $u,v,w,...$.
+\begin{align}
+  \sigma_x^2 = \sigma_u^2\left(\frac{\partial x}{\partial u}\right) + \sigma_v^2\left(\frac{\partial x}{\partial v}\right) + ... + 2\sigma_{uv}^2\left(\frac{\partial x}{\partial u}\right)\left(\frac{\partial x}{\partial v}\right) + ... 
+\end{align}
+where
+\begin{align}
+  \sigma_{uv}^2 = \lim_{N\rightarrow\infty}\frac{1}{N}\sum_i^N\left(u_i-\overline{u}\right)\left(v_i-\overline{v}\right) = \left\langle\left(u-\overline{u}\right)\left(v-\overline{v}\right)\right\rangle.
+\end{align}
+If $u$ and $v$ are uncorrelated, $\sigma_{uv}$ is of course zero. If $u$ and $v$ are correlated -- we have two possible situations, \emph{positive correlation} (or simply \emph{correlated} variables) and \emph{negative correlation} (or simply \emph{anticorrelated} variables). For two variables $u$ and $v$, positive correlation would correspond to $u$ and $v$ growing or decreasing together -- an example would be height and weight (with a large sample, the majority of taller people would weight more than those shorter than them). Negative correlation between $u$ and $v$ is a situation where as one grows the other decreases. Take the height of a horse racing jockey and the speed the horse will run. Figure~\ref{fig:correlations} shows samples with their respective correlations.
+\begin{figure}[h!]
+  \centering
+  \input{tikz/uncorrel.tex}\input{tikz/correl.tex}\input{tikz/anticorrel.tex}
+  \caption{Three samples which correspond to uncorrelated variables, correlated variables, and uncorrelated variables.}
+  \label{fig:correlations}
+\end{figure}
+The covariance $\sigma_{uv}^2$ has dimensions -- it's often desired to have a dimensionless quantity. For this we will define the correlation coefficient:
+\begin{align}
+  \rho = \frac{\sigma_{uv}^2}{\sigma_u\sigma_v} = \frac{\cov{u}{v}}{\sigma_u\sigma_v}
+\end{align}
+It's clear that $\rho$ is bounded: $-1 \leq \rho \leq 1$. We can define three levels of correlation in table~\ref{tab:rho}.
+\begin{table}[h!]
+  \centering
+  \caption{$\rho$ values table}
+  \begin{tabular}{ l | c }
+    \hline\hline
+    $\rho = 0$  & uncorrelated             \\
+    $\rho = 1$  & complete correlation     \\
+    $\rho = -1$ & complete anticorrelation \\
+    \hline\hline
+  \end{tabular}
+  \label{tab:rho}
+\end{table}
+
+Now let's dive back into error ellipses. Take two uncorrelated outcomes $u$ and $v$ with Gaussian probabilities:
+\begin{align}
+  P(u) = \frac{1}{\sqrt{2\pi}\sigma_u}e^{-u^2/2\sigma_u^2} \quad P(v) = \frac{1}{\sqrt{2\pi}\sigma_v}e^{-v^2/2\sigma_v^2}.
+\end{align}
+It follows that
+\begin{align}
+  P(u)P(v) = \frac{1}{2\pi\sigma_u\sigma_v}\exp\left[-\frac{1}{2}\left(\frac{u^2}{\sigma_u^2}+\frac{v^2}{\sigma_v^2}\right)\right].
+  \label{eq:ellipse-form}
+\end{align}
+We can write that $P=P_{\text{max}}e^{-1/2}$ when
+\begin{align*}
+  \frac{u^2}{\sigma_u^2}+\frac{v^2}{\sigma_v^2} = 1.
+\end{align*}
+This is the equation of an ellipse where the major and minor axes are given by the the square root of the variance of each quantity. Figure~\ref{fig:ellipse1} shows this in graphical form. The volume inside the  $1\sigma$ contour holds approximately 68\% of the totla probability.
+\begin{figure} 
+  \centering
+  \begin{tikzpicture}[scale=1,
+      grid/.style={
+        color=white!50!black,stealth-stealth
+      }
+    ]
+    \node (o) at (0,0) {};
+    \draw [grid] (-2.2,0) -- (2.2,0) node [below,xshift=-6pt] {$u$};
+    \draw [grid] (0,-2.7) -- (0,2.7) node [right,yshift=-6pt] {$v$};
+    \draw (o) ellipse [start angle=0, end angle=360, x radius=1.3, y radius=2.0];
+    \draw [-stealth] (o)++(5pt, 5pt) -- +(0,1.7) node [midway, right] {$\sigma_v$};
+    \draw [-stealth] (o)++(5pt,-5pt) -- +(1,0) node [midway, below] {$\sigma_u$};
+    \fill[black] (o) circle (0.1) node [above left] {$P_{\text{max}}$};
+    \node at (-1.2,2.1) {$1\sigma$ contour};
+  \end{tikzpicture}
+  \caption{The $1\sigma$ contour displayed in an error ellipse corresponding to a pair of uncorrelated variables}
+  \label{fig:ellipse1}
+\end{figure}
+We can write equation~\ref{eq:ellipse-form} in a new form using vectors and matrices:
+\begin{align}
+  P(u,v) = \frac{1}{2\pi\left|\vecb{M}\right|^{1/2}}\exp\left[-\frac{1}{2}\vecb{x}^{\mathrm{T}}\vecb{M}^{-1}\vecb{x}\right].
+\end{align}
+The term inside the exponential ($\vecb{x}^{\mathrm{T}}\vecb{M}^{-1}\vecb{x}$) can be written:
+\begin{align*}
+  \begin{pmatrix}
+    u            & v
+  \end{pmatrix}
+  \begin{pmatrix}
+    1/\sigma_u^2 & 0                                \\
+    0            & 1/\sigma_v^2
+  \end{pmatrix}
+  \begin{pmatrix}
+    u                                               \\
+    v
+  \end{pmatrix}.
+\end{align*}
+From here we define the error matrix $\vecb{M}$ (for uncorrelated variables):
+\begin{align}
+  \vecb{M} = \begin{pmatrix}
+    \sigma_u^2   & 0                                \\
+    0            & \sigma_v^2
+  \end{pmatrix}.
+  \label{eq:error_matrix}
+\end{align}
+In generaal (or say for possibly  correlated variables) the matrix takes the general form:
+\begin{align}
+  M_{ij} = \left\langle\left(u_i - \overline{u}_i\right)\left(u_j-\overline{u}_j\right)\right\rangle,
+  \label{eq:error_matrix_elements}
+\end{align}
+where $u_i$ corresponds to some variable set $\{u,v,w,\dotsc\}$. Using the numbered indices again, we can write an arbitrary error matrix in the form:
+\begin{align}
+  \vecb{M} = \begin{pmatrix}
+    \sigma_1^2   & \cov{1}{2} & \cov{1}{3} & \ldots \\
+    \cov{1}{2}   & \sigma_2^2 & \cov{2}{3} & \ldots \\
+    \cov{1}{3}   & \cov{2}{3} & \sigma_3^2 & \ldots \\
+    \vdots       & \vdots     & \vdots     & \ddots
+  \end{pmatrix}.
+\end{align}
+Therefore if we go back to our standard two variable correlated form (using $u$ and $v$ again) we would write the error matrix in the form:
+\begin{align}
+  \vecb{M} = \begin{pmatrix}
+    \sigma_u^2   & \cov{u}{v}                       \\
+    \cov{u}{v}   & \sigma_v^2
+  \end{pmatrix}.
+\end{align}
+Using the definition of the correlation coefficient, we can now write the probability equation (with the ellipse equation in the exponential) in the following form:
+\begin{align}
+  P(u,v) = \frac{1}{2\pi\sigma_u\sigma_v}\frac{1}{\sqrt{1-\rho^2}}\exp\left\{-\frac{1}{2}\left[\frac{1}{(1-\rho)^2}\left(\frac{u^2}{\sigma_u^2}+\frac{v^2}{\sigma_v^2}-\frac{2\rho u v}{\sigma_u\sigma_v}\right)\right]\right\}.
+\end{align}
+This is assuming a mean of zero for $u$ and $v$, for non zero means we simply change all $u$ and $v$ terms to $(u-\overline{u})$ and $(v-\overline{v})$, respectively.
+
+Now we'll generalize to an arbitrary number of variables (here we say $k$ variables):
+\begin{align}
+  P(x_1,x_2,\dotsc,x_k) = \frac{1}{(2\pi)^{k/2}}\frac{1}{|\vecb{M}|^{1/2}}\exp\left[-\frac{1}{2}\left(\vecb{x}-\boldsymbol{\mu}\right)^{\mathrm{T}}\vecb{M}\left(\vecb{x}-\boldsymbol{\mu}\right)\right],
+\end{align}
+where
+\begin{align}
+  \vecb{x} = \begin{pmatrix}
+    x_1    \\
+    x_2    \\
+    \vdots \\
+    x_k
+  \end{pmatrix}
+  \qquad
+ \boldsymbol{\mu} = \begin{pmatrix}
+   \mu_1   \\
+   \mu_2   \\
+   \vdots  \\
+   \mu_k
+ \end{pmatrix}
+ \quad \text{or} \quad
+   \boldsymbol{\mu} = \begin{pmatrix}
+     \overline{x}_1 \\
+     \overline{x}_2 \\
+     \vdots \\
+     \overline{x}_k
+   \end{pmatrix}.
+\end{align}
+\begin{figure}[h!]
+  \centering
+  *Make diagram showing error ellipse*
+\end{figure}
+We note here that the eigenvalues of the error matrix are the semi axes of the error ellipse.
+
+Now that we've done a pretty in depth discussion of the error matrix let's talk about using it. Let's say we have a variable which is a function of measurable quantities with known uncertainties -- we can use the error matrix for those values to determine the uncertainties in our desired variable. Our desired uncertainty is the uncertainty in some parameter $\zeta$, and it is a function of $N$ variables $\{x_1,\dotsc,x_N\}$:
+\begin{align*}
+  \zeta = f(x_1,x_2,\dotsc,x_N).
+\end{align*}
+We can define vector $\vecb{D}$ of derivates of $f$ w.r.t. all independent variables:
+\begin{align}
+  \vecb{D} = \begin{pmatrix}
+    \partial f/\partial x_1 \\
+    \partial f/\partial x_2 \\
+    \vdots \\
+    \partial f/\partial x_N
+  \end{pmatrix}
+\end{align}
+Then the variance in $\zeta$ is defined as:
+\begin{align}
+  \sigma_{\zeta}^2 = \vecb{D}^{\mathrm{T}}\vecb{M}\vecb{D}
+  \label{eq:non-transformed-variance}
+\end{align}
+For variable transformations -- for example if $x$ is a function of $r$ and $\theta$ and $y$ is a function of $r$ and $\theta$, then we develop a Jacobi style matrix to determine an error matrix for $x$ and $y$ systems:
+\begin{equation}
+  \vecb{A} = \begin{pmatrix}
+    \partial x/\partial r      & \partial y/\partial r \\
+    \partial x/\partial \theta & \partial y/\partial \theta 
+  \end{pmatrix}.
+\end{equation}
+We then define the new error matrix (for $x$ and $y$) as:
+\begin{align}
+  \vecb{M}_{xy} = \vecb{A}^{\mathrm{T}}\vecb{M}_{r\theta}\vecb{A}
+\end{align}
+This of course can be generalized to many variables. For example if $\{\alpha_1,\dotsc,\alpha_N\}$ are dependent on $\{\beta_1,\dotsc,\beta_M\}$, then $\vecb{A}$ would have the form:
+\begin{align}
+  \vecb{A} = \begin{pmatrix}
+    \partial\alpha_1/\partial\beta_1 & \partial\alpha_2/\partial\beta_1 & \ldots & \partial\alpha_N/\partial\beta_1 \\
+    \partial\alpha_1/\partial\beta_2 & \partial\alpha_2/\partial\beta_2 & \ldots & \partial\alpha_N/\partial\beta_2 \\
+    \vdots                           & \vdots                           & \ddots & \vdots                           \\
+    \partial\alpha_1/\partial\beta_M & \partial\alpha_2/\partial\beta_M & \ldots & \partial\alpha_N/\partial\beta_M
+  \end{pmatrix}
+\end{align}
+Now if we go back to the $(x,y)$ and $(r,\theta)$ example, we can define some variable $z$ which is a function of $x$ and $y$:
+\begin{align*}
+  z = f(x,y)
+\end{align*}
+And now to determine the uncertainty on a variable in some transformed coordinates we develop another derivative vector in the new system (call it the prime system):
+\begin{align}
+  \vecb{D}^{\prime} = \begin{pmatrix}
+    \partial z/\partial x \\
+    \partial z/\partial y
+  \end{pmatrix}
+\end{align}
+And we calculate the variance of $z$ as:
+\begin{align}
+  \sigma_z^2 = \vecb{D}^{\prime\mathrm{T}}\vecb{A}^{\mathrm{T}}\vecb{M}_{r\theta}\vecb{A}\vecb{D}^{\prime},
+\end{align}
+which would just be (as intuitively expected based on equation~\ref{eq:non-transformed-variance}):
+\begin{align}
+  \sigma_z^2 = \vecb{D}^{\prime\mathrm{T}}\vecb{M}_{xy}\vecb{D}^{\prime}
+\end{align}
+And of course this can be generalized back to our $\alpha$ and $\beta$ system if we define some $\xi$ as a function of all of the $\alpha$'s. Then:
+\begin{align}
+  \vecb{D}^{\prime} = \begin{pmatrix}
+    \partial \xi / \partial \alpha_1 \\
+    \partial \xi / \partial \alpha_2 \\
+    \vdots                           \\
+    \partial \xi / \partial \alpha_N
+  \end{pmatrix}
+\end{align}
+\end{document}
